@@ -51,7 +51,6 @@ public class Album {
 		
 		db = new DbUtilities();
 		String sql = "INSERT INTO album (album_id, title, release_date, recording_company_name, number_of_tracks, PMRC_rating, length) VALUES ('" + this.albumID + "', '" + this.title + "', '" + this.releaseDate + "', '" + this.recordingCompany + "', " + this.numberOfTracks + ", '" + this.pmrcRating + "', " + this.length + ");";
-		//System.out.println(sql);
 		db.executeQuery(sql);
 		
 	}
@@ -67,7 +66,6 @@ public class Album {
 		
 		db = new DbUtilities();
 		String sql = "SELECT title, release_date, cover_image_path, recording_company_name, number_of_tracks, PMRC_rating, length FROM album WHERE album_id = '" + this.albumID + "';";
-		//System.out.println(sql);
 		try {
 			ResultSet rs = db.getResultSet(sql);
 			if(rs.next()) {
@@ -83,7 +81,6 @@ public class Album {
 			e.printStackTrace();
 		}
 		
-		//Populates list of songs by grabbing keys from album_song table and adding songs to albumSongs Map. 
 		String sql2 = "SELECT fk_song_id FROM album_song WHERE fk_album_id = '" + this.albumID + "';";
 		//System.out.println(sql2);
 		try {
@@ -108,7 +105,6 @@ public class Album {
 		db = new DbUtilities();
 		
 		String sql = "DELETE FROM album WHERE album_id = '" + this.albumID + "';";
-		//System.out.println(sql);
 		db.executeQuery(sql);
 		
 		//Setting fields to null or 0 to destroy object.
@@ -132,9 +128,7 @@ public class Album {
 		
 		this.albumSongs.put(song.getSongID(), song);
 		db = new DbUtilities();
-		//Using INSERT IGNORE here to avoid error on inserting duplicate values.
 		String sql = "INSERT IGNORE INTO album_song (fk_album_id, fk_song_id) VALUES ('" + this.albumID + "', '" + song.getSongID() + "');";
-		//System.out.println(sql);
 		db.executeQuery(sql);
 		
 	}
@@ -150,7 +144,6 @@ public class Album {
 		db = new DbUtilities();
 		//Only deleting from album_song, not song, since we're only removing the reference.
 		String sql = "DELETE FROM album_song WHERE fk_album_id = '" + this.albumID + "' AND fk_song_id = '" + songID + "';";
-		//System.out.println(sql);
 		db.executeQuery(sql);	
 		
 	}
@@ -166,7 +159,6 @@ public class Album {
 		db = new DbUtilities();
 		//Only deleting from album_song, not song, since we're only removing the reference.
 		String sql = "DELETE FROM album_song WHERE fk_album_id = '" + this.albumID + "' AND fk_song_id = '" + song.getSongID() + "';";
-		//System.out.println(sql);
 		db.executeQuery(sql);	
 		
 	}
@@ -184,7 +176,6 @@ public class Album {
 		this.title = title;
 		db = new DbUtilities();
 		String sql = "UPDATE album SET title = '" + this.title + "' WHERE album_id = '" + this.albumID + "';";
-		//System.out.println(sql);
 		db.executeQuery(sql);
 		
 	}
@@ -199,7 +190,6 @@ public class Album {
 		
 		this.releaseDate = releaseDate;
 		String sql = "UPDATE album SET release_date = '" + this.releaseDate + "' WHERE album_id = '" + this.albumID + "';";
-		//System.out.println(sql);
 		db.executeQuery(sql);
 		
 	}
@@ -214,7 +204,6 @@ public class Album {
 		
 		this.coverImagePath = coverImagePath;
 		String sql = "UPDATE album SET cover_image_path = '" + this.coverImagePath + "' WHERE album_id = '" + this.albumID + "';";
-		//System.out.println(sql);
 		db.executeQuery(sql);
 		
 	}
@@ -229,7 +218,6 @@ public class Album {
 		
 		this.recordingCompany = recordingCompany;
 		String sql = "UPDATE album SET recording_company_name = '" + this.recordingCompany + "' WHERE album_id = '" + this.albumID + "';";
-		//System.out.println(sql);
 		db.executeQuery(sql);
 		
 	}
@@ -243,7 +231,6 @@ public class Album {
 		
 		this.numberOfTracks = numberOfTracks;
 		String sql = "UPDATE album SET number_of_tracks = " + this.numberOfTracks + " WHERE album_id = '" + this.albumID + "';";
-		//System.out.println(sql);
 		db.executeQuery(sql);
 	}
 
@@ -256,7 +243,6 @@ public class Album {
 		
 		this.pmrcRating = pmrcRating;
 		String sql = "UPDATE album SET PMRC_rating = '" + this.pmrcRating + "' WHERE album_id = '" + this.albumID + "';";
-		//System.out.println(sql);
 		db.executeQuery(sql);
 		
 	}
@@ -271,7 +257,6 @@ public class Album {
 		
 		this.length = length;
 		String sql = "UPDATE album SET length = " + this.length + " WHERE album_id = '" + this.albumID + "';";
-		//System.out.println(sql);
 		db.executeQuery(sql);
 		
 	}
