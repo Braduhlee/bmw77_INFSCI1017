@@ -82,7 +82,6 @@ public class Album {
 		}
 		
 		String sql2 = "SELECT fk_song_id FROM album_song WHERE fk_album_id = '" + this.albumID + "';";
-		//System.out.println(sql2);
 		try {
 			ResultSet rs2 = db.getResultSet(sql2);
 			//Using while instead of if, since there may be more than one in the list
