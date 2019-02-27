@@ -50,8 +50,21 @@ public class Album {
 		this.albumSongs = new HashMap<String, Song>();
 		
 		db = new DbUtilities();
-		String sql = "INSERT INTO album (album_id, title, release_date, recording_company_name, number_of_tracks, PMRC_rating, length) VALUES ('" + this.albumID + "', '" + this.title + "', '" + this.releaseDate + "', '" + this.recordingCompany + "', " + this.numberOfTracks + ", '" + this.pmrcRating + "', " + this.length + ");";
+		String sql = "INSERT INTO album (album_id, title, release_date, recording_company_name, number_of_tracks, PMRC_rating, length) VALUES (?, ?, ?, ?, ?, ?, ?);";
 		db.executeQuery(sql);
+		try {
+			PreparedStatement statement = db.getConn().prepareStatement(sql);
+			statement.setString(1, this.albumID);
+			statement.setString(2, this.title);
+			statement.setString(3, this.releaseDate);
+			statement.setString(4, this.recordingCompany);
+			statement.setInt(5, this.numberOfTracks);
+			statement.setString(6, this.pmrcRating);
+			statement.setInt(7, this.length);
+			statement.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 		
 	}
 	
@@ -65,9 +78,12 @@ public class Album {
 		this.albumSongs = new HashMap<String, Song>();
 		
 		db = new DbUtilities();
-		String sql = "SELECT title, release_date, cover_image_path, recording_company_name, number_of_tracks, PMRC_rating, length FROM album WHERE album_id = '" + this.albumID + "';";
+		String sql = "SELECT title, release_date, cover_image_path, recording_company_name, number_of_tracks, PMRC_rating, length FROM album WHERE album_id = ?;";
 		try {
-			ResultSet rs = db.getResultSet(sql);
+			
+			PreparedStatement statement = db.getConn().prepareStatement(sql);
+			statement.setString(1, this.albumID);
+			ResultSet rs = statement.executeQuery();
 			if(rs.next()) {
 				this.title = rs.getString("title");
 				this.releaseDate = rs.getString("release_date");
@@ -77,18 +93,23 @@ public class Album {
 				this.pmrcRating = rs.getString("PMRC_rating");
 				this.length = rs.getInt("length");
 			}
-		} catch (SQLException e) {
+		} 
+		catch (SQLException e) {
 			e.printStackTrace();
 		}
 		
-		String sql2 = "SELECT fk_song_id FROM album_song WHERE fk_album_id = '" + this.albumID + "';";
+		String sql2 = "SELECT fk_song_id FROM album_song WHERE fk_album_id = ?;";
 		try {
-			ResultSet rs2 = db.getResultSet(sql2);
-			//Using while instead of if, since there may be more than one in the list
+			
+			PreparedStatement statement2 = db.getConn().prepareStatement(sql2);
+			statement2.setString(1, this.albumID);
+			ResultSet rs2 = statement2.executeQuery();
+			//Using while instead of if, since the list will likely have more than one entry.
 			while(rs2.next()) {
 				this.albumSongs.put(rs2.getString("fk_song_id"), new Song(rs2.getString("fk_song_id")));
 			}
-		} catch (SQLException e) {
+		} 
+		catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}
@@ -103,8 +124,15 @@ public class Album {
 		
 		db = new DbUtilities();
 		
-		String sql = "DELETE FROM album WHERE album_id = '" + this.albumID + "';";
-		db.executeQuery(sql);
+		String sql = "DELETE FROM album WHERE album_id = ?;";
+		try {
+			PreparedStatement statement = db.getConn().prepareStatement(sql);
+			statement.setString(1, this.albumID);
+			statement.executeUpdate();
+		} 
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
 		
 		//Setting fields to null or 0 to destroy object.
 		this.title = null;
@@ -127,8 +155,16 @@ public class Album {
 		
 		this.albumSongs.put(song.getSongID(), song);
 		db = new DbUtilities();
-		String sql = "INSERT IGNORE INTO album_song (fk_album_id, fk_song_id) VALUES ('" + this.albumID + "', '" + song.getSongID() + "');";
-		db.executeQuery(sql);
+		String sql = "INSERT IGNORE INTO album_song (fk_album_id, fk_song_id) VALUES (?, ?);";
+		try {
+			PreparedStatement statement = db.getConn().prepareStatement(sql);
+			statement.setString(1, this.albumID);
+			statement.setString(2, song.getSongID());
+			statement.executeUpdate();
+		} 
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
 		
 	}
 	
@@ -142,8 +178,16 @@ public class Album {
 		this.albumSongs.remove(songID);
 		db = new DbUtilities();
 		//Only deleting from album_song, not song, since we're only removing the reference.
-		String sql = "DELETE FROM album_song WHERE fk_album_id = '" + this.albumID + "' AND fk_song_id = '" + songID + "';";
-		db.executeQuery(sql);	
+		String sql = "DELETE FROM album_song WHERE fk_album_id = ? AND fk_song_id = ?;";
+		try {
+			PreparedStatement statement = db.getConn().prepareStatement(sql);
+			statement.setString(1, this.albumID);
+			statement.setString(2, SongID());
+			statement.executeUpdate();
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
 		
 	}
 	
@@ -157,8 +201,16 @@ public class Album {
 		this.albumSongs.remove(song.getSongID());
 		db = new DbUtilities();
 		//Only deleting from album_song, not song, since we're only removing the reference.
-		String sql = "DELETE FROM album_song WHERE fk_album_id = '" + this.albumID + "' AND fk_song_id = '" + song.getSongID() + "';";
-		db.executeQuery(sql);	
+		String sql = "DELETE FROM album_song WHERE fk_album_id = ? AND fk_song_id = ?;";
+		try {
+			PreparedStatement statement = db.getConn().prepareStatement(sql);
+			statement.setString(1, this.albumID);
+			statement.setString(2, song.getSongID());
+			statement.executeUpdate();
+		} 
+		catch (SQLException e) {
+			e.printStackTrace();
+		}	
 		
 	}
 
@@ -174,8 +226,17 @@ public class Album {
 		
 		this.title = title;
 		db = new DbUtilities();
-		String sql = "UPDATE album SET title = '" + this.title + "' WHERE album_id = '" + this.albumID + "';";
-		db.executeQuery(sql);
+		String sql = "UPDATE album SET title = ? WHERE album_id = ?;";
+		try {
+			PreparedStatement statement = db.getConn().prepareStatement(sql);
+			statement.setString(1, title);
+			statement.setString(2, this.albumID);
+			statement.executeUpdate();
+		} 
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
 		
 	}
 
@@ -188,8 +249,16 @@ public class Album {
 	public void setReleaseDate(String releaseDate) {
 		
 		this.releaseDate = releaseDate;
-		String sql = "UPDATE album SET release_date = '" + this.releaseDate + "' WHERE album_id = '" + this.albumID + "';";
-		db.executeQuery(sql);
+		String sql = "UPDATE album SET release_date = ? WHERE album_id = ?;";
+		try {
+			PreparedStatement statement = db.getConn().prepareStatement(sql);
+			statement.setString(1, releaseDate);
+			statement.setString(2, this.albumID);
+			statement.executeUpdate();
+		} 
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
 		
 	}
 
@@ -202,8 +271,16 @@ public class Album {
 	public void setCoverImagePath(String coverImagePath) {
 		
 		this.coverImagePath = coverImagePath;
-		String sql = "UPDATE album SET cover_image_path = '" + this.coverImagePath + "' WHERE album_id = '" + this.albumID + "';";
-		db.executeQuery(sql);
+		String sql = "UPDATE album SET cover_image_path = ? WHERE album_id = ?;";
+		try {
+			PreparedStatement statement = db.getConn().prepareStatement(sql);
+			statement.setString(1, coverImagePath);
+			statement.setString(2, this.albumID);
+			statement.executeUpdate();
+		} 
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
 		
 	}
 
@@ -216,8 +293,16 @@ public class Album {
 	public void setRecordingCompany(String recordingCompany) {
 		
 		this.recordingCompany = recordingCompany;
-		String sql = "UPDATE album SET recording_company_name = '" + this.recordingCompany + "' WHERE album_id = '" + this.albumID + "';";
-		db.executeQuery(sql);
+		String sql = "UPDATE album SET recording_company_name = ? WHERE album_id = ?;";
+		try {
+			PreparedStatement statement = db.getConn().prepareStatement(sql);
+			statement.setString(1, recordingCompany);
+			statement.setString(2, this.albumID);
+			statement.executeUpdate();
+		} 
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
 		
 	}
 
@@ -229,8 +314,17 @@ public class Album {
 	public void setNumberOfTracks(int numberOfTracks) {
 		
 		this.numberOfTracks = numberOfTracks;
-		String sql = "UPDATE album SET number_of_tracks = " + this.numberOfTracks + " WHERE album_id = '" + this.albumID + "';";
-		db.executeQuery(sql);
+		String sql = "UPDATE album SET number_of_tracks = ? WHERE album_id = ?;";
+		
+		try {
+			PreparedStatement statement = db.getConn().prepareStatement(sql);
+			statement.setInt(1, numberOfTracks);
+			statement.setString(2, this.albumID);
+			statement.executeUpdate();
+		} 
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public String getPmrcRating() {
@@ -241,8 +335,16 @@ public class Album {
 	public void setPmrcRating(String pmrcRating) {
 		
 		this.pmrcRating = pmrcRating;
-		String sql = "UPDATE album SET PMRC_rating = '" + this.pmrcRating + "' WHERE album_id = '" + this.albumID + "';";
-		db.executeQuery(sql);
+		String sql = "UPDATE album SET PMRC_rating = ? WHERE album_id = ?;";
+		try {
+			PreparedStatement statement = db.getConn().prepareStatement(sql);
+			statement.setString(1, pmrcRating);
+			statement.setString(2, this.albumID);
+			statement.executeUpdate();
+		} 
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
 		
 	}
 
@@ -255,8 +357,16 @@ public class Album {
 	public void setLength(int length) {
 		
 		this.length = length;
-		String sql = "UPDATE album SET length = " + this.length + " WHERE album_id = '" + this.albumID + "';";
-		db.executeQuery(sql);
+		String sql = "UPDATE album SET length = ? WHERE album_id = ?;";
+		try {
+			PreparedStatement statement = db.getConn().prepareStatement(sql);
+			statement.setInt(1, length);
+			statement.setString(2, this.albumID);
+			statement.executeUpdate();
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
 		
 	}
 	
