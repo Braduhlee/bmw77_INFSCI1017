@@ -9,8 +9,7 @@ public class MusicTester {
 public static void main(String[] args) {
 		
 		
-		//testing Song
-		Song s = new Song("1");
+		Song s = new Song("UUID");
 		System.out.println(s.getTitle());
 		
 		s.setLength(360);
@@ -19,14 +18,13 @@ public static void main(String[] args) {
 		s.setReleaseDate("2018-09-07 00:00:00");
 		s.setTitle("2009");
 		System.out.println(s.getTitle());
-		s.deleteSong("1");
+		s.deleteSong("UUID");
 		
 		Song s2 = new Song("2009",360,"2018-03-23 00:00:00","2018-09-07 00:00:00");
-		s2.deleteSong("1");
+		s2.deleteSong("UUID");
 
 		
-		//testing Artist
-		Artist a = new Artist("123");
+		Artist a = new Artist("UUID");
 		System.out.println(a.getBandName());
 		
 		a.setFirstName("Malcolm");
@@ -34,13 +32,13 @@ public static void main(String[] args) {
 		a.setBandName("Mac Miller");
 		a.setBio("Pittsburgh Native Hip Hop artist");
 		System.out.println(a.getBandName());
-		a.deleteArtist("123");
+		a.deleteArtist("UUID");
 		
 		Artist a2 = new Artist("Dominique","Jones","Lil Baby");
-		a2.deleteArtist("1");
+		a2.deleteArtist("UUID");
 		
-		//testing Album
-		Album al = new Album("2");
+		
+		Album al = new Album("UUID");
 		System.out.println(al.getTitle());
 		
 		al.setTitle("Swimming");
@@ -51,11 +49,9 @@ public static void main(String[] args) {
 		al.setPmrcRating("R");
 		al.setLength(58);
 		System.out.println(al.getTitle());
-		al.deleteAlbum("2");
+		al.deleteAlbum("UUID");
 		
 		Album al2 = new Album("Drip Harder", "2018-10-04 00:00:00",  "YSL", 13, "R", 38);
-		al2.deleteAlbum("1");		
+		al2.deleteAlbum("UUID");		
 		
 	}
-
-}
