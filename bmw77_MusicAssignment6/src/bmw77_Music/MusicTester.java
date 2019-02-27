@@ -55,3 +55,5 @@ public static void main(String[] args) {
 		al2.deleteAlbum("UUID");		
 		
 	}
+
+}
