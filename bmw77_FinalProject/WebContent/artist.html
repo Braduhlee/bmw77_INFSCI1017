@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Artists</title>
+<link href="css/style.css" rel="stylesheet" type="text/css" />
+<script src="js/jquery-3.3.1.min.js"></script>
+</head>
+<body>
+	<div id="navBar" class="center">
+		<ul>
+			<li><a href="album.html" title="Albums">Albums</a></li>
+			<li><a href="artist.html" title="Artists">Artists</a></li>
+			<li><a href="genre.html" title="Genres">Genres</a></li>
+			<li><a href="song.html" title="Songs">Songs</a></li>
+		</ul>
+	</div>
+	<h1 id="mainHeader" >Artists</h1>
+	<div id="artistSearch" class="searchBox" >
+		<h2>Search Artists</h2>
+		<div class="center">
+			Search Type: 
+			<select name="searchType" id="searchType" class="textField">
+				<option value="equals">Equals</option>
+				<option value="begins">Begins</option>
+				<option value="ends">Ends</option>
+				<option value="contains">Contains</option>
+				<option value="">All</option>
+			</select>
+		</div>
+		<div class="center">
+			Artist Name: <input type="text" id="artistName" name="artistName" value="" class="textField" />
+		</div>
+		<div id="btns" class="center" >
+			<ul>
+				<li><input type="button" id="btnSearch" name="btnSubmit" class="actButton" value="Search" /></li>
+				<li><input type="button" id="btnClear" name ="btnClear" class="actButton" value="Clear Results" /></li>
+			</ul>
+		</div>
+	</div>
+	
+	<div id="searchResults">
+		<div id="targetName" ></div>
+		<table border="1" id="tblSearchResults" class="center">
+			<tr>
+				<th>First Name</th>
+				<th>Last Name</th>
+				<th>Band Name</th>
+				<th>Biography</th>
+				<th>Songs</th>
+				<th>Albums</th>
+			</tr>
+		</table>
+	</div>
+	
+	</body>
+	<script>
+	
+		$(document).ready(function (){
+			
+			// Check for song ID in address (which would mean the page was reached via a song link).
+			// If song ID exists, retrieve song title via SongWS.
+			if (window.location.href.indexOf("?songID=") > -1) {
+				var addy = window.location.href;
+				var songID = addy.substring(addy.indexOf("=") + 1);
+				var songTitle = ""
+					var url = "SongWS?songID=" + songID;
+					$.get(url, function(resp) {
+						songTitle = resp.title;
+						// Add h2 with song title.
+						var targetName = "<h2>Song Title: " + songTitle + "</h2>";
+						$("#targetName").append(targetName);
+					});
+				// Pull list of artists associated with target song.
+				var url = "ArtistListWS?songID=" + songID;
+				$.get(url, function(resp){
+					parseArtistData(resp);
+				})
+			};
+			
+			// Check for album ID in address (which would mean the page was reached via an album link).
+			// If song ID exists, retrieve song title via SongWS.
+			if (window.location.href.indexOf("?albumID=") > -1) {
+				var addy = window.location.href;
+				var albumID = addy.substring(addy.indexOf("=") + 1);
+				var albumTitle = ""
+					var url = "AlbumWS?albumID=" + albumID;
+					$.get(url, function(resp) {
+						albumTitle = resp.title;
+						// Add h2 with album title.
+						var targetName = "<h2>Album Title: " + albumTitle + "</h2>";
+						$("#targetName").append(targetName);
+					});
+				// Pull list of artists associated with target album.
+				var url = "ArtistListWS?albumID=" + albumID;
+				$.get(url, function(resp){
+					parseArtistData(resp);
+				})
+			};
+			
+			// Load "Clear" button functionality.
+			$("#btnClear").click(function (){
+				clearResultsTable();
+			});
+			
+			// Load "Search" button functionality.
+			$("#btnSearch").click(function (){
+				search();
+			});
+			
+			// Autocomplete listener that activates if more than two characters have bene entered in search term field.
+			$("#artistName").keyup(function(){
+				var keyPressed = $("#artistName").val();
+				if(keyPressed.length > 2) {
+					search();					
+				} else {
+					clearResultsTable();
+				}
+			});
+		});
+		
+		// Main search function.
+		function search(optSearchType) {
+			clearResultsTable();
+			var artistName = $("#artistName").val();
+			var searchType = "";		
+			// Logic for dealing with optional parameters.
+			if(optSearchType === undefined) {
+				var searchType = $("#searchType").val();
+			} else{
+				searchType = optSearchType;
+			}
+			var url = "ArtistListWS?artistName=" + artistName + "&searchType=" + searchType;
+			$.get(url, function(resp){
+				parseArtistData(resp);
+			})		
+		}
+		function parseArtistData(data){
+			var result = "";
+			
+			for(var i=0; i < data.length; i++) {
+				var tr = $("<tr></tr>"); //Created empty html table row
+				
+				//First data cell
+				var td = $("<td></td>"); //Created empty html table data
+				td.html(data[i].first_name);
+				tr.append(td);
+				
+				//Second data cell
+				td = $("<td></td>");
+				td.html(data[i].last_name);
+				tr.append(td);
+	
+				//Third data cell
+				td = $("<td></td>");
+				td.html(data[i].band_name);
+				tr.append(td);
+	
+				//Fourth data cell
+				td = $("<td></td>");
+				td.html(data[i].bio);
+				tr.append(td);
+				
+				//Fifth data cell
+				td = $("<td class='songLink'></td>");
+				var link = "<a href='song.html?artistID=" + data[i].artist_id + "'>View Songs</a>";
+				td.html(link);
+				tr.append(td);
+				//Sixth data cell
+				td = $("<td class='albumLink'></td>");
+				var link = "<a href='album.html?artistID=" + data[i].artist_id + "'>View Albums</a>";
+				td.html(link);
+				tr.append(td);
+				
+				//Append row to table
+				$("#tblSearchResults").append(tr);
+			}
+			
+		}
+		// Function to clear results table when necessary.
+		// Source: https://stackoverflow.com/questions/2620181/clear-table-jquery
+		function clearResultsTable() {
+			$("#tblSearchResults td").parent().remove();
+			$("#targetName").remove();
+		}
+		
+		// Function to make pressing "Enter" the same as clicking "Search."
+		//Source: https://memorynotfound.com/detect-enter-keypress-javascript-jquery/
+		$(document).keypress(function(e) {
+			var keycode = (e.keyCode ? e.keyCode : e.which);
+			if (keycode == '13') {
+				$("#btnSearch").click();
+			}
+		});
+		
+	</script>
+</html>

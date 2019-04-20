@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Albums</title>
+<link href="css/style.css" rel="stylesheet" type="text/css" />
+<script src="js/jquery-3.3.1.min.js"></script>
+</head>
+<body>
+	<div id="navBar" class="center">
+		<ul>
+			<li><a href="album.html" title="Albums">Albums</a></li>
+			<li><a href="artist.html" title="Artists">Artists</a></li>
+			<li><a href="genre.html" title="Genres">Genres</a></li>
+			<li><a href="song.html" title="Songs">Songs</a></li>
+		</ul>
+	</div>
+	<h1 id="mainHeader" >Albums</h1>
+	<div id="albumSearch" class="searchBox" >
+		<h2>Search Albums</h2>
+		<div class="center">
+			Search Type: 
+			<select name="searchType" id="searchType" class="textField">
+				<option value="equals">Equals</option>
+				<option value="begins">Begins</option>
+				<option value="ends">Ends</option>
+				<option value="contains">Contains</option>
+				<option value="">All</option>
+			</select>
+		</div>
+		<div class="center">
+			Album Title: <input type="text" id="albumTitle" name="albumTitle" value="" class="textField" />
+		</div>
+		<div id="btns" class="center">
+			<ul>
+				<li><input type="button" id="btnSearch" name="btnSubmit" class="actButton" value="Search" /></li>
+				<li><input type="button" id="btnClear" name ="btnClear" class="actButton" value="Clear Results" /></li>
+			</ul>
+		</div>
+	</div>
+	
+	<div id="searchResults">
+		<div id="targetName" ></div>
+		<table border="1" id="tblSearchResults" class="center">
+			<tr>
+				<th>Album Title</th>
+				<th>Release Date</th>
+				<th>Recording Company</th>
+				<th>Songs</th>
+				<th>Artists</th>
+			</tr>
+		</table>
+	</div>
+	
+	</body>
+	<script>
+		$(document).ready(function (){
+			
+			// Check for artist ID in address (which would mean the page was reached via an artist link).
+			// If artist ID exists, retrieve artist's name via ArtistWS.
+			if (window.location.href.indexOf("?artistID=") > -1) {
+				var addy = window.location.href;
+				var artistID = addy.substring(addy.indexOf("=") + 1);
+				var bandName = "";
+				var artistName = "";
+				var url = "ArtistWS?artistID=" + artistID;
+				$.get(url, function(resp) {
+					// Include band name if not blank.
+					if (resp.band_name != "") {
+						bandName = "Band Name: " + resp.band_name;
+					};
+					// Include first and/or last name if not blank.
+					if (resp.first_name != "" || resp.last_name != "") {
+						artistName = "Artist Name: " + resp.first_name + " " + resp.last_name;
+					}
+					// Add h2 with artist/band name.
+					var targetName = "<h2>" + artistName + " " + bandName + "</h2>";
+					$("#targetName").append(targetName);
+				});
+				// Pull list of albums associated with target artist.
+				var url = "AlbumListWS?artistID=" + artistID;
+				$.get(url, function(resp){
+					parseAlbumData(resp);
+				})
+			};
+			
+			// Check for song ID in address (which would mean the page was reached via a song link).
+			// If song ID exists, retrieve song title via SongWS.
+			if (window.location.href.indexOf("?songID=") > -1) {
+				var addy = window.location.href;
+				var songID = addy.substring(addy.indexOf("=") + 1);
+				var songTitle = ""
+				var url = "SongWS?songID=" + songID;
+				$.get(url, function(resp) {
+					songTitle = resp.title;
+					// Add h2 with song title.
+					var targetName = "<h2>Song Title: " + songTitle + "</h2>";
+					$("#targetName").append(targetName);
+				});
+				// Pull list of albums associated with target song.
+				var url = "AlbumListWS?songID=" + songID;
+				$.get(url, function(resp){
+					parseAlbumData(resp);
+				})
+			};
+			
+			// Load "Clear" button functionality.
+			$("#btnClear").click(function (){
+				clearResultsTable();
+			});
+			
+			// Load "Search" button functionality.
+			$("#btnSearch").click(function (){
+				search();
+			});
+			
+			// Autocomplete listener that activates if more than two characters have bene entered in search term field.
+			$("#albumTitle").keyup(function(){
+				var keyPressed = $("#albumTitle").val();
+				if(keyPressed.length > 2) {
+					search();					
+				} else {
+					clearResultsTable();
+				}
+			});
+		});
+		
+		// Main search function.
+		function search(optSearchType){
+			clearResultsTable();
+			var albumTitle = $("#albumTitle").val();
+			var searchType = "";		
+			// Logic for dealing with optional parameters.
+			if(optSearchType === undefined) {
+				var searchType = $("#searchType").val();
+			} else{
+				searchType = optSearchType;
+			}
+			var url = "AlbumListWS?albumTitle=" + albumTitle + "&searchType=" + searchType;
+			$.get(url, function(resp){
+				parseAlbumData(resp);
+			})
+		}
+		function parseAlbumData(data){
+			var result = "";
+			
+			for(var i=0; i < data.length; i++) {
+				var tr = $("<tr></tr>"); // Created empty html table row
+				
+				// First data cell
+				var td = $("<td></td>"); //Created empty html table data
+				td.html(data[i].title);
+				tr.append(td);
+				
+				// Second data cell
+				td = $("<td></td>");
+				td.html(data[i].release_date);
+				tr.append(td);
+	
+				// Third data cell
+				td = $("<td></td>");
+				td.html(data[i].recording_company_name);
+				tr.append(td);
+	
+				// Fourth data cell
+				td = $("<td class='songLink'></td>");	
+				var link = "<a href='song.html?albumID=" + data[i].album_id + "'>View Songs</a>";
+				td.html(link);
+				tr.append(td);
+				
+				// Fifth data cell
+				td = $("<td class='artistLink'></td>");
+				var link = "<a href='artist.html?albumID=" + data[i].album_id + "'>View Artist(s)</a>";
+				td.html(link);
+				tr.append(td);
+				
+				// Append row to table
+				$("#tblSearchResults").append(tr);
+			}
+		}
+		
+		// Function to clear results table when necessary.
+		// Source: https://stackoverflow.com/questions/2620181/clear-table-jquery
+		function clearResultsTable() {
+			$("#tblSearchResults td").parent().remove();
+		}
+		
+		// Function to make pressing "Enter" the same as clicking "Search."
+		//Source: https://memorynotfound.com/detect-enter-keypress-javascript-jquery/
+		$(document).keypress(function(e) {
+			var keycode = (e.keyCode ? e.keyCode : e.which);
+			if (keycode == '13') {
+				$("#btnSearch").click();
+			}
+		});
+	</script>
+</html>
